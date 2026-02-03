@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-import os
-
 import boto3
+
+from mcp_aws.config import get_settings
 
 
 class AWSClient:
     """Manages boto3 sessions and service clients.
 
-    Reads credentials from environment variables by default:
+    Reads credentials from environment variables or .env file via Pydantic Settings:
     - AWS_REGION (default: us-east-1)
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
@@ -24,14 +24,13 @@ class AWSClient:
         secret_access_key: str | None = None,
         profile: str | None = None,
     ) -> None:
-        self.region = (region or os.environ.get("AWS_REGION", "us-east-1")).strip()
-        self.access_key_id = (
-            access_key_id or os.environ.get("AWS_ACCESS_KEY_ID", "")
-        ).strip()
+        settings = get_settings()
+        self.region = (region or settings.region).strip()
+        self.access_key_id = (access_key_id or settings.access_key_id).strip()
         self.secret_access_key = (
-            secret_access_key or os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+            secret_access_key or settings.secret_access_key
         ).strip()
-        self.profile = (profile or os.environ.get("AWS_PROFILE", "")).strip()
+        self.profile = (profile or settings.profile).strip()
 
     def session(self) -> boto3.Session:
         """Create a boto3 session with configured credentials."""

@@ -3,7 +3,7 @@ name = "mcp-aws"
 version = "0.1.0"
 description = "AWS operations as Python library, LangChain tools, and MCP server"
 requires-python = ">=3.10"
-dependencies = ["boto3>=1.28.0"]
+dependencies = ["boto3>=1.28.0", "pydantic-settings>=2.0"]
 
 [project.optional-dependencies]
 mcp = ["fastmcp>=2.0.0"]
