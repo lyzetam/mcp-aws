@@ -7,18 +7,31 @@ from typing import Any
 from ..client import AWSClient
 
 
-def list_secrets(client: AWSClient, max_results: int = 100) -> list[dict[str, str]]:
+def list_secrets(client: AWSClient, max_results: int = 500) -> list[dict[str, str]]:
     """List secrets in AWS Secrets Manager.
 
+    Paginates past the AWS API's hard cap of 100 results per call by following
+    NextToken until ``max_results`` is reached or there are no more pages.
+
     Returns:
-        List of dicts with Name and ARN.
+        List of dicts with Name and ARN (up to ``max_results``).
     """
     sm = client.get_client("secretsmanager")
-    response = sm.list_secrets(MaxResults=max_results)
-    return [
-        {"Name": s["Name"], "ARN": s["ARN"]}
-        for s in response.get("SecretList", [])
-    ]
+    out: list[dict[str, str]] = []
+    next_token: str | None = None
+    while len(out) < max_results:
+        kwargs: dict[str, Any] = {"MaxResults": min(100, max_results - len(out))}
+        if next_token:
+            kwargs["NextToken"] = next_token
+        response = sm.list_secrets(**kwargs)
+        out.extend(
+            {"Name": s["Name"], "ARN": s["ARN"]}
+            for s in response.get("SecretList", [])
+        )
+        next_token = response.get("NextToken")
+        if not next_token:
+            break
+    return out[:max_results]
 
 
 def get_secret(client: AWSClient, secret_id: str) -> str:

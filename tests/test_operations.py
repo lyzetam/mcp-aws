@@ -150,6 +150,19 @@ def test_secrets_list(client):
     assert "test/secret2" in names
 
 
+@mock_aws
+def test_secrets_list_paginates_past_100(client):
+    # More than one page (AWS caps each call at 100); list_secrets must follow NextToken.
+    for i in range(150):
+        secrets.create_secret(client, f"test/bulk-{i:03d}", f"v{i}")
+
+    everything = secrets.list_secrets(client, max_results=500)
+    assert len(everything) == 150  # all pages collected, not capped at 100
+
+    capped = secrets.list_secrets(client, max_results=120)
+    assert len(capped) == 120  # honors the requested ceiling
+
+
 # =============================================================================
 # Lambda
 # =============================================================================

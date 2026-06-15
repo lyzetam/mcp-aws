@@ -158,11 +158,11 @@ def aws_secrets_get(secret_name: str) -> str:
 
 class SecretsListInput(BaseModel):
     filter_name: str | None = Field(default=None, description="Filter by name prefix")
-    max_results: int = Field(default=50, description="Maximum results")
+    max_results: int = Field(default=500, description="Maximum results (paginates past the 100/call API cap)")
 
 
 @tool(args_schema=SecretsListInput)
-def aws_secrets_list(filter_name: str | None = None, max_results: int = 50) -> str:
+def aws_secrets_list(filter_name: str | None = None, max_results: int = 500) -> str:
     """List secrets in AWS Secrets Manager."""
     result = secrets.list_secrets(_get_client(), max_results=max_results)
     if filter_name:

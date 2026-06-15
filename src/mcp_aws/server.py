@@ -154,11 +154,13 @@ def s3_put_object(bucket: str, key: str, content: str) -> str:
 
 
 @mcp.tool
-def secrets_list(max_results: int = 100) -> str:
+def secrets_list(max_results: int = 500) -> str:
     """List secrets in AWS Secrets Manager.
 
+    Paginates past the AWS API's 100-per-call cap; default returns up to 500.
+
     Args:
-        max_results: Maximum number of results (default 100)
+        max_results: Maximum number of results to return (default 500)
     """
     try:
         return json.dumps(secrets.list_secrets(_client, max_results=max_results), indent=2)
